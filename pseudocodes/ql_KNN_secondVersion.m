@@ -1,0 +1,62 @@
+- 1 Input:
+- 2 discountFactor 
+- 3 learningRate
+- 4 oldQTableWeight
+- 5 k
+- 6 dataset % sequential dataset
+- 7 chunkLength % all chunk records have the same texture type
+- 8 Output:
+- 9 bestFeature % as timeseries for each chunk
+- 10accTimeSer % accuracy time series
+- 11start:
+- 12[Features Labels] = decomposeDataset(dataset)
+- 13numberOfStates = numberOfFeaturesTypes
+- 14numberOfActions = numberOfFeaturesTypes
+- 15Q = zeros(numberOfActions) % Q-Table
+- 16numberOfChunks = length(dataset)/chunkLength
+- 17for i = 1:numberOfChunks
+- 18	chunk = getChunk(dataset,i,chunkLength)
+- 19	for s = 1:numberOfStates
+- 20		% apply Knn predection algorithm on this chunk based on Features{s}
+- 21		% if the chunk is the first chunk then consider it the teraining and testing else
+- 22		% consider the previous chunk as training and the current as testing
+- 23		if i ==1
+- 24			stateAcc = findKnnAcc(chunkFeatures{s},chunkLabels,k)
+- 25			else
+- 26			stateAcc = findKnnAcc2(chunkFeatures{s},chunkLabels,previousChunk,k)
+- 27		end
+- 28		for a = 1:numberOfActions
+- 29			% apply Knn predection algorithm on this chunk based on Features{a}
+- 30			% if the chunk is the first chunk then consider it the teraining and testing else
+- 31			% consider the previous chunk as training and the current as testing
+- 32			if i ==1
+- 33				actionAcc = findKnnAcc(chunkFeatures{a},chunkLabels,k)
+- 34				else
+- 35				actionAcc = findKnnAcc2(chunkFeatures{a},chunkLabels,previousChunk,k)
+- 36			end
+- 37			reward = actionAcc - stateAcc
+- 38			Q(s, a) = oldQTableWeight * Q(s, a) + (1-oldQTableWeight) * ...
+- 39			(learningRate * (reward + discountFactor * max(Q(s,otherStates)) - Q(s, a)))
+- 40		end
+- 41	end
+- 42	bestFeature in this chunk = max(max(Q))
+- 43	accTimeSer(i) = accuracy of bestFeatures
+- 44	previousChunk = currentChunk
+- 45	end
+- 46	end
+- 47	%%%%%%%%%%
+- 48	KNN second version pseudocode:
+- 49	Input:
+- 50	chunkFeatures
+- 51	previousChunk
+- 52	k
+- 53	Output:
+- 54	predictedLabels
+- 55	start:
+- 56	for r = 1:numberOfRecords
+- 57		compute the equlidean distance between this record and all records in the previousChunk
+- 58		nearestRecs = take the nearest k records to the current record 
+- 59		prevailing record  = find the prevailing record of nearestRecs 
+- 60		predictedLabels(r) = prevailing record 
+- 61		end
+- 62	end	

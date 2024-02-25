@@ -1,0 +1,49 @@
+Input:
+discountFactor 
+learningRate
+oldQTableWeight
+k
+dataset % sequential dataset
+chunkLength % all chunk records have the same texture type
+Output:
+bestFeature % as timeseries for each chunk
+accTimeSer % accuracy time series
+start:
+[Features Labels] = decomposeDataset(dataset)
+numberOfStates = numberOfFeaturesTypes
+numberOfActions = numberOfFeaturesTypes
+Q = zeros(numberOfActions) % Q-Table
+numberOfChunks = length(dataset)/chunkLength
+for i = 1:numberOfChunks
+	chunk = getChunk(dataset,i,chunkLength)
+	for s = 1:numberOfStates
+		% apply Knn predection algorithm on this chunk based on Features{s}
+		stateAcc = findTestingAcc(chunkFeatures{s},chunkLabels,k)
+		for a = 1:numberOfActions
+			% apply Knn predection algorithm on this chunk based on Features{a}
+			actionAcc = findTestingAcc(chunkFeatures{a},chunkLabels,k)
+			reward = actionAcc - stateAcc
+			Q(s, a) = oldQTableWeight * Q(s, a) + (1-oldQTableWeight) * ...
+			(learningRate * (reward + discountFactor * max(Q(s,otherStates)) - Q(s, a)))
+		end
+	end
+	bestFeature in this chunk = max(max(Q))
+	accTimeSer(i) = accuracy of bestFeatures
+end
+end
+%%%%%%%%%%
+KNN pseudocode:
+Input:
+chunkFeatures
+chunkLabels
+k
+Output:
+predictedLabels
+start:
+for r = 1:numberOfRecords
+	compute the equlidean distance between this record and all other records
+	nearestRecs = take the nearest k records to the current record 
+	prevailing record  = find the prevailing record of nearestRecs 
+	predictedLabels(r) = prevailing record 
+end
+end

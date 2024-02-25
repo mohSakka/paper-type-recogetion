@@ -1,0 +1,45 @@
+1 -Input:
+2 -discountFactor 
+3 -learningRate
+4 -oldQTableWeight
+5 -dataset % sequential dataset
+6 -chunkLength % all chunk records have the same texture type
+7 -numberOfFeatures 
+8 -testingRatio
+9 -Output:
+10-bestFeature % as timeseries for each chunk
+11-accTimeSer % accuracy time series
+12-start:
+13-% performing Q-Learning
+14-[Features Labels] = decomposeDataset(testingData)
+15-numberOfStates = numberOfFeaturesTypes
+16-numberOfActions = numberOfFeaturesTypes
+17-Q = zeros(numberOfActions) % Q-Table
+18-numberOfChunks = length(dataset)/chunkLength
+19-for i = 1:numberOfChunks
+20-	chunk = getChunk(dataset,i,chunkLength)
+21-	numberOfTraining = (1-testingRatio) * length(chunk)
+22-	trainingData = chunk(1:numberOfTraining)
+23-	testingData = chunk(numberOfTraining+1:end)
+24-	if i==1
+25-		[Learner{s}] = buildOselmLearner(trainingData{s})
+26-		else
+27-		[Learner{s}] = updateOselmLearner(trainingData{s})
+28-	end
+29-	for s = 1:numberOfStates
+30-		% apply OSELM predection algorithm on this chunk based on Features{s}
+31-		stateAcc = findTestingAcc(Learner{s},testingData{s},chunkLabels)
+32-		for a = 1:numberOfActions
+33-			% apply OSELM predection algorithm on this chunk based on Features{a}
+34-			actionAcc = findTestingAcc(Learner{a},testingData{a},chunkLabels)
+35-			reward = actionAcc - stateAcc
+36-			Q(s, a) = oldQTableWeight * Q(s, a) + (1-oldQTableWeight) * ...
+37-			(learningRate * (reward + discountFactor * max(Q(s,otherStates)) - Q(s, a)))
+38-		end
+39-	end
+40-	bestFeature in this chunk = max(max(Q))
+41-	accTimeSer(i) = accuracy of bestFeatures
+42-end
+43-end
+44-%%%%%%%%%%
+45-% for findTestingAcc we just apply OSELM predection procedure1

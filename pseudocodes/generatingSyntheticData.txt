@@ -1,0 +1,31 @@
+% generating synthetic data pseudo code
+%% input:
+numberOfFeatures
+numberOfRecords
+maxBeta
+minBeta
+maxAlpha
+minAlpha
+minC
+maxC
+%% output:
+Features
+Labels
+%% start:
+[beta_1,beta_2..,beta_numberOfFeatures] = random numbers between [minBeta --> maxBeta] 
+[alpha_1,alpha_2..,alpha_numberOfFeatures] = random numbers between [minAlpha --> maxAlpha] 
+[c_1,c_2..,c_numberOfFeatures] = random numbers between [minC --> maxC] 
+beta = repmat(beta,numberOfRecords,1)
+alpha = repmat(alpha,numberOfRecords,1)
+c = repmat(c,numberOfRecords,1)
+t = 1:numberOfRecords, t=t'
+t = repmat(t,1,numberOfFeatures)
+Features = alpha .* sin(beta .* t) + c
+for each period
+k = rndi(numberOfFeatures)
+subset = select k random features
+weights = generate random weight FOR each feature
+weightedFeatures = subset_Features(within the current period) * weights
+Labels = sum (weightedFeatures along each row)
+end
+%% end
